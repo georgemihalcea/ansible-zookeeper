@@ -1,0 +1,8 @@
+---
+#
+# configure zookeeper-servers hosts
+
+- hosts:
+  - zookeeper-servers
+  roles:
+  - zookeeper

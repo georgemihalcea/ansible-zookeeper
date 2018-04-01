@@ -1,0 +1,83 @@
+---
+- name: Install java packages
+  apt:
+    name: "{{ java_package }}"
+    state: present
+
+- name: Download zookeeper
+  get_url:
+    url: "{{ zookeeper_package_url }}"
+    dest: "{{ zookeeper_package }}"
+    mode: 0640
+    sha256sum: f6bd68a1c8f7c13ea4c2c99f13082d0d71ac464ffaf3bf7a365879ab6ad10e84
+
+- include_tasks: users.yml
+
+- name: Extract zookeeper package
+  unarchive:
+    src: "{{ zookeeper_package }}"
+    dest: "{{ zookeeper_base }}"
+    creates: "{{ zookeeper_folder }}"
+    remote_src: yes
+
+- name: Create zookeeper symlink
+  file:
+    path: "{{ zookeeper_path }}"
+    src: "{{ zookeeper_folder }}"
+    state: link
+
+- name: Create zookeeper logs directory
+  file:
+    path: "{{ zookeeper_path }}/logs"
+    state: directory
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+    mode: 0755
+
+- name: Create zookeeper data directory
+  file:
+    path: "{{ zookeeper_data_dir }}"
+    state: directory
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+    mode: 0755
+
+- name: Create zookeeper myid file
+  template:
+    src: myid.j2
+    dest: "{{ zookeeper_data_dir }}/myid"
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+    mode: 0644
+  notify:
+    - Restart zookeeper
+
+- name: Set global environment variables
+  blockinfile:
+    path: /etc/profile
+    marker: "# {mark} ANSIBLE MANAGED BLOCK ZOOKEEPER_HOME"
+    block: |
+      export ZOOKEEPER_HOME=/opt/zookeeper
+
+- name: Create zookeeper config file
+  template:
+    src: zoo.cfg.j2
+    dest: "{{ zookeeper_path }}/conf/zoo.cfg"
+    mode: 0644
+  notify:
+    - Restart zookeeper
+
+- name: Create zookeeper unit file
+  template:
+    src: zookeeper.service.j2
+    dest: /lib/systemd/system/zookeeper.service
+    mode: 0644
+  notify:
+    - Reload systemctl
+    - Restart zookeeper
+
+- name: Start zookeeper
+  service:
+    name: zookeeper.service
+    state: started
+    enabled: yes

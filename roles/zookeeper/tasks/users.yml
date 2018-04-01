@@ -1,0 +1,14 @@
+---
+- name: Create groups
+  group:
+    name: "{{ zookeeper_group }}"
+    gid: "{{ zookeeper_user_gid }}"
+    state: present
+
+- name: Create users
+  user:
+    name: "{{ zookeeper_user }}"
+    uid: "{{ zookeeper_user_uid }}"
+    comment: "zookeeper user"
+    group: "{{ zookeeper_user }}"
+    shell: /bin/bash

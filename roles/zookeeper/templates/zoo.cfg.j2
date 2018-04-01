@@ -1,0 +1,58 @@
+# The number of milliseconds of each tick
+{% if zookeeper_tick_time is defined %}
+tickTime={{ zookeeper_tick_time }}
+{% else %}
+tickTime=2000
+{% endif %}
+# The number of ticks that the initial 
+# synchronization phase can take
+{% if zookeeper_init_limit is defined %}
+initLimit={{ zookeeper_init_limit }}
+{% else %}
+initLimit=10
+{% endif %}
+# The number of ticks that can pass between 
+# sending a request and getting an acknowledgement
+{% if zookeeper_sync_limit is defined %}
+syncLimit={{ zookeeper_sync_limit }}
+{% else %}
+syncLimit=5
+{% endif %}
+# the directory where the snapshot is stored.
+# do not use /tmp for storage, /tmp here is just 
+# example sakes.
+{% if zookeeper_data_dir is defined %}
+dataDir={{ zookeeper_data_dir }}
+{% else %}
+dataDir=/var/lib/zookeeper
+{% endif %}
+# the port at which the clients will connect
+{% if zookeeper_client_port is defined %}
+clientPort={{ zookeeper_client_port }}
+{% else %}
+clientPort=2181
+{% endif %}
+# the maximum number of client connections.
+# increase this if you need to handle more clients
+{% if zookeeper_max_client_cnxns is defined %}
+maxClientCnxns={{ zookeeper_max_client_cnxns }}
+{% else %}
+#maxClientCnxns=60
+{% endif %}
+#
+# Be sure to read the maintenance section of the 
+# administrator guide before turning on autopurge.
+#
+# http://zookeeper.apache.org/doc/current/zookeeperAdmin.html#sc_maintenance
+#
+# The number of snapshots to retain in dataDir
+#autopurge.snapRetainCount=3
+# Purge task interval in hours
+# Set to "0" to disable auto purge feature
+#autopurge.purgeInterval=1
+
+{% if zookeeper_servers is defined %}
+{% for server, opts in zookeeper_servers.iteritems() %}
+server.{{ server }}={{ opts.hostname }}:{{ opts.leader_port }}:{{ opts.follower_port }}
+{% endfor %}
+{% endif %}

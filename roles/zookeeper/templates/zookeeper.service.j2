@@ -1,0 +1,24 @@
+[Unit]
+Description=ZooKeeper Service
+Documentation=http://zookeeper.apache.org
+Requires=network.target
+After=network.target
+
+[Service]
+LimitMEMLOCK=infinity
+LimitNOFILE=65535
+Type=forking
+User={{ zookeeper_user }}
+Group={{ zookeeper_group }}
+
+Environment=ZOOKEEPER_HOME={{ zookeeper_path }}
+Environment=ZOO_LOG_DIR={{ zookeeper_path }}/logs
+
+ExecStart={{ zookeeper_path }}/bin/zkServer.sh start
+ExecStop={{ zookeeper_path }}/bin/zkServer.sh stop
+ExecReload={{ zookeeper_path }}/bin/zkServer.sh restart
+
+WorkingDirectory={{ zookeeper_data_dir }}
+
+[Install]
+WantedBy=multi-user.target
